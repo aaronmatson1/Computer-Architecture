@@ -108,31 +108,56 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        running = True
+        # running = True
 
-        while running:
-            #fetch the next instruction
+        # while running:
+        #     #fetch the next instruction
+
+        while not self.halted:
             self.ir = self.ram_read(self.pc)
             operand_a = self.ram_read(self.pc + 1)
             operand_b = self.ram_read(self.pc + 2)
 
-            #Now, decode the instruction
-            binary_ir = bin(self.ir)[2:].zfill(8)
-            operand_count = int(binary_ir[2],2)
-            is_ALU_operation = binary_ir[2] =='1'
-            instruction_does_set_pc = binary_ir[3] == '1'
-            instruction_id = int(binary_ir[4:], 2)
+            # #Now, decode the instruction
+            # binary_ir = bin(self.ir)[2:].zfill(8)
+            # operand_count = int(binary_ir[2],2)
+            # is_ALU_operation = binary_ir[2] =='1'
+            # instruction_does_set_pc = binary_ir[3] == '1'
+            # instruction_id = int(binary_ir[4:], 2)
 
-            #Increment the program counter
-            self.pc += (1+ operand_count)
+            # #Increment the program counter
+            # self.pc += (1+ operand_count)
 
-            #execute instruction
-            if self.ir == int('0000001', 2): #HLT
-                running = False
-            elif self.ir == int('1000010', 2): #LDI
+            # #execute instruction
+            # if self.ir == int('0000001', 2): #HLT
+            #     running = False
+            # elif self.ir == int('1000010', 2): #LDI
+            #     self.reg[operand_a] = operand_b
+            # elif self.ir == int('01000111',2): #PRN
+            #     print(self.reg[operand_a))
+            # else:
+            #     print(f'Error: Could not execute instruction: {bin(self.ir)[2:].zfill(8)}')
+            #     sys.exit(1)
+            self.execute_instruction(operand_a, operand_b)
+
+        def execute_instruction(self, operand_a, operand_b):
+            if self.ir == HLT:
+                self.halted = True
+                self.pc += 1
+
+            elif self.ir == LDI:
                 self.reg[operand_a] = operand_b
-            elif self.ir == int('01000111',2): #PRN
-                print(self.reg[operand_a))
+                self.pc += 2
+
+            elif self.ir == PRN:
+                print(self.eg[operand_a])
+                self.pc += 2
+
+            elif self.ir == MUL:
+                self.reg[operand_a] *- self.reg[operand_b]
+                self.pc += 3
+
             else:
                 print(f'Error: Could not execute instruction: {bin(self.ir)[2:].zfill(8)}')
                 sys.exit(1)
+
