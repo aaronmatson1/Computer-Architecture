@@ -1,6 +1,12 @@
 """CPU functionality."""
 
 import sys
+import os.path
+
+HLT = 0b00000001
+LDI = 0b10000010
+PRN = 0b01000111
+MUL = 0b10100010
 
 class CPU:
     """Main CPU class."""
@@ -24,6 +30,15 @@ class CPU:
         # Initialize the Stack Pointer
         # SP points at the value at the op of the stack (most recently pushed), or at address F4 if the stack is empty
         self.reg[7] = 0xF4 # 244 # int('F4', 16)
+
+        # Property wrapper for stack pointers
+        @property
+        def sp(self):
+            return self.reg[7]
+
+        @sp.setter
+        def sp(self, a):
+            self.reg[7] = a & 0xFF
 
 
     def ram_read(self, mar):
