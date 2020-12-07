@@ -7,6 +7,8 @@ HLT = 0b00000001
 LDI = 0b10000010
 PRN = 0b01000111
 MUL = 0b10100010
+PUSH = 0b01000101
+POP = 0b01000110 
 
 class CPU:
     """Main CPU class."""
@@ -31,6 +33,15 @@ class CPU:
         # SP points at the value at the op of the stack (most recently pushed), or at address F4 if the stack is empty
         self.reg[7] = 0xF4 # 244 # int('F4', 16)
 
+         # Setup Branch Table
+        self.branchtable = {}
+        self.branchtable[HLT] = self.execute_HLT
+        self.branchtable[LDI] = self.execute_LDI
+        self.branchtable[PRN] = self.execute_PRN
+        self.branchtable[MUL] = self.execute_MUL
+        self.branchtable[PUSH] = self.execute_PUSH
+        self.branchtable[POP] = self.execute_POP
+
         # Property wrapper for stack pointers
         @property
         def sp(self):
@@ -39,6 +50,12 @@ class CPU:
         @sp.setter
         def sp(self, a):
             self.reg[7] = a & 0xFF
+
+        def instruction_size(self):
+            return ((self.ir >> 6) & 0b11) + 1
+
+        def instruction_sets_pc(self):
+            return ((self.ir >> 4) & 0b0001) == 1
 
 
     def ram_read(self, mar):
@@ -60,21 +77,6 @@ class CPU:
 
         address = 0
 
-        # For now, we've just hardcoded a program:
-
-        # program = [
-        #     # From print8.ls8
-        #     0b10000010, # LDI R0,8
-        #     0b00000000,
-        #     0b00001000,
-        #     0b01000111, # PRN R0
-        #     0b00000000,
-        #     0b00000001, # HLT
-        # ]
-
-        # for instruction in program:
-        #     self.ram[address] = instruction
-        #     address += 1
 
         file_path = os.path.join(os.path.dirname(__file__), file_name)
         try:
@@ -122,6 +124,8 @@ class CPU:
 
         print()
 
+        #Run loop
+
     def run(self):
         """Run the CPU."""
         # running = True
@@ -134,46 +138,36 @@ class CPU:
             operand_a = self.ram_read(self.pc + 1)
             operand_b = self.ram_read(self.pc + 2)
 
-            # #Now, decode the instruction
-            # binary_ir = bin(self.ir)[2:].zfill(8)
-            # operand_count = int(binary_ir[2],2)
-            # is_ALU_operation = binary_ir[2] =='1'
-            # instruction_does_set_pc = binary_ir[3] == '1'
-            # instruction_id = int(binary_ir[4:], 2)
+            if not self.instruction_sets_pc():
+                self.pc += self.instruction_size()
 
-            # #Increment the program counter
-            # self.pc += (1+ operand_count)
-
-            # #execute instruction
-            # if self.ir == int('0000001', 2): #HLT
-            #     running = False
-            # elif self.ir == int('1000010', 2): #LDI
-            #     self.reg[operand_a] = operand_b
-            # elif self.ir == int('01000111',2): #PRN
-            #     print(self.reg[operand_a))
-            # else:
-            #     print(f'Error: Could not execute instruction: {bin(self.ir)[2:].zfill(8)}')
-            #     sys.exit(1)
             self.execute_instruction(operand_a, operand_b)
 
         def execute_instruction(self, operand_a, operand_b):
-            if self.ir == HLT:
-                self.halted = True
-                self.pc += 1
-
-            elif self.ir == LDI:
-                self.reg[operand_a] = operand_b
-                self.pc += 2
-
-            elif self.ir == PRN:
-                print(self.eg[operand_a])
-                self.pc += 2
-
-            elif self.ir == MUL:
-                self.reg[operand_a] *- self.reg[operand_b]
-                self.pc += 3
-
+            if self.ir in self.branchtable:
+                self.branchtable[self.ir](operand_a, operand_b)
             else:
-                print(f'Error: Could not execute instruction: {bin(self.ir)[2:].zfill(8)}')
-                sys.exit(1)
+            print(f"Error: Could not execute intsruction: {self.ir}")
+            sys.exit(1)
+
+            #Define operations to be loaded in the branch table
+
+            def execute_HLT(self.operand_a, operand_b):
+                self.reg[operand_a] = operand_b
+
+            def execute_PRN(self, operand_a, operand_b):
+                print(self.reg[operand_a])
+
+            def execute_MUL(self, operand_a, operand_b):
+                self.reg[operand_a] *= self.reg[operand_b]
+
+            def execute_PUSH(self, operand_a, operand_b):
+                self.sp -= 1
+                value_in_register = self.reg[operand_a]
+                self.ram[self.sp] = value_in_register
+
+            def execute_POP(self, operand_a, operand_b):
+                top_most_value_in_stack = self.ram[self.sp]
+                self.reg[operand_a] = top_most_value_in_stack
+                self.sp += 1
 
