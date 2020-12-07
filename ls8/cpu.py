@@ -19,6 +19,7 @@ class CPU:
         self.mar = 0 # Memoray Address Register: Holds the memory address we're reading or writing
         self.mdr = 0 #Memory Data Register: hold the value to write or the value to just read
         self.fl = 0 # Flag Register: Holds the current flags status
+        self.halted = False
 
         # Initialize the Stack Pointer
         # SP points at the value at the op of the stack (most recently pushed), or at address F4 if the stack is empty
@@ -120,4 +121,3 @@ class CPU:
             else:
                 print(f'Error: Could not execute instruction: {bin(self.ir)[2:].zfill(8)}')
                 sys.exit(1)
-                
