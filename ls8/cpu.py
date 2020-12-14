@@ -177,14 +177,20 @@ class CPU:
         #     #fetch the next instruction
 
         while not self.halted:
+
+            # Fetch instructions
             self.ir = self.ram_read(self.pc)
-            operand_a = self.ram_read(self.pc + 1)
-            operand_b = self.ram_read(self.pc + 2)
+            
+            # Execute instructions
+            if self.ir in self.branchtable:
+                self.branchtable[self.ir]()
+            else:
+                print(f"Error: Could not find instruction: {self.ir} in branch table.")
+                sys.exit(1)
 
-            if not self.instruction_sets_pc():
-                self.pc += self.instruction_size()
-
-            self.execute_instruction(operand_a, operand_b)
+            # Conditionally increment program counter
+            if not self.instruction_sets_pc:
+                self.pc += self.instruction_size
 
         def execute_instruction(self, operand_a, operand_b):
             if self.ir in self.branchtable:
