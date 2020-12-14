@@ -5,7 +5,15 @@
 import sys
 from cpu import *
 
-cpu = CPU()
+if len(sys.argb) != 2:
+    # print(f'\nRunning file: {file_name}')
+    print(argv_err_msg)
+    sys.exit(1)
 
-cpu.load()
+else:
+    file_name = sys.argv[1]
+
+
+cpu =CPU()
+cpu.load(file_name)
 cpu.run()
