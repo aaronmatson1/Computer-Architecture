@@ -20,6 +20,10 @@ AND = 0b10101000
 OR  = 0b10101010
 XOR = 0b10101011
 NOT = 0b01101001
+SHL = 0b10101100
+SHR = 0b10101101
+MOD = 0b10100100
+ADDI = 0b10101110
 
 class CPU:
     """Main CPU class."""
@@ -64,6 +68,10 @@ class CPU:
         self.branchtable[OR] = self.execute_OR
         self.branchtable[XOR] = self.execute_XOR
         self.branchtable[NOT] = self.execute_NOT
+        self.branchtable[SHL] = self.execute_SHL
+        self.branchtable[SHR] = self.execute_SHR
+        self.branchtable[MOD] = self.execute_MOD
+        self.branchtable[ADDI] = self.execute_ADDI
 
         # Property wrapper for stack pointers
         @property
@@ -256,3 +264,15 @@ class CPU:
 
             def execute_NOT(self):
                 self.reg[self.operand_a] = ~self.reg[self.operand_a]
+
+            def execute_SHL(self):
+                self.reg[self.operand_a] <<= self.reg[self.operand_b]
+
+            def execute_SHR(self):
+                self.reg[self.operand_a] >>= self.reg[self.operand_b]
+
+            def execute_MOD(self):
+                self.reg[self.operand_a] %= self.reg[self.operand_b]
+
+            def execute_ADDI(self):
+                self.reg[self.operand_a] += self.operand_b
